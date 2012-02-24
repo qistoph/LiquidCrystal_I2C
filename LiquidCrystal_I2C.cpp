@@ -29,12 +29,13 @@
 // can't assume that its in that state when a sketch starts (and the
 // LiquidCrystal constructor is called).
 
-LiquidCrystal_I2C::LiquidCrystal_I2C(uint8_t lcd_Addr,uint8_t lcd_cols,uint8_t lcd_rows)
+LiquidCrystal_I2C::LiquidCrystal_I2C(uint8_t lcd_Addr,uint8_t lcd_cols,uint8_t lcd_rows,uint8_t shift_type)
 {
   _Addr = lcd_Addr;
   _cols = lcd_cols;
   _rows = lcd_rows;
   _backlightval = LCD_NOBACKLIGHT;
+  _shifttype = shift_type;
 }
 
 void LiquidCrystal_I2C::init(){
@@ -48,6 +49,14 @@ void LiquidCrystal_I2C::init_priv()
 #else   // original call
 	Wire.begin();
 #endif
+
+	if(_shifttype == MCP23008) {
+  	Wire.beginTransmission(_Addr);
+  	Wire.write(IODIR);
+  	Wire.write(0x00);
+  	Wire.endTransmission();
+  }
+
 	_displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
 	begin(_cols, _rows);  
 }
@@ -248,11 +257,13 @@ void LiquidCrystal_I2C::write4bits(uint8_t value) {
 
 void LiquidCrystal_I2C::expanderWrite(uint8_t _data){                                        
 #if defined(__AVR_ATtiny85__) || (__AVR_ATtiny2313__)   // Replaced Wire calls with ATtiny TWI calls
-	TinyWireM.beginTransmission(_Addr); 
+	TinyWireM.beginTransmission(_Addr);
+	if(_shifttype == MCP23008) TinyWireM.write(0x09); // goto GPIO address for MCP23008
 	TinyWireM.send(((int)(_data) | _backlightval)); 
 	TinyWireM.endTransmission();
 #else  // original lib function
 	Wire.beginTransmission(_Addr);
+	if(_shifttype == MCP23008) Wire.write(0x09); // goto GPIO address for MCP23008
 	Wire.write((int)(_data) | _backlightval);
 	Wire.endTransmission();   
 #endif

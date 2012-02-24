@@ -53,16 +53,38 @@
 #define LCD_5x8DOTS 0x00
 
 // flags for backlight control
-#define LCD_BACKLIGHT 0x00
-#define LCD_NOBACKLIGHT 0x80
+#define LCD_BACKLIGHT 0x80
+#define LCD_NOBACKLIGHT 0x00
 
 #define En B00010000  // Enable bit
 #define Rw B00100000  // Read/Write bit
 #define Rs B01000000  // Register select bit
 
+// MCP23008 stuff
+#define MCP23008 1
+
+#define IODIR 0x00
+#define IPOL 0x01
+#define GPINTEN 0x02
+#define DEFVAL 0x03
+#define INTCON 0x04
+#define IOCON 0x05
+#define GPPU 0x06
+#define INTF 0x07
+#define INTCAP 0x08
+#define GPIO 0x09
+#define OLAT 0x0a
+
+#define INTPOL 1
+#define ODR 2
+#define HAEN 3
+#define IDSSLW 4
+#define SEQOP 5
+
+
 class LiquidCrystal_I2C : public Print {
 public:
-  LiquidCrystal_I2C(uint8_t lcd_Addr,uint8_t lcd_cols,uint8_t lcd_rows);
+  LiquidCrystal_I2C(uint8_t lcd_Addr,uint8_t lcd_cols,uint8_t lcd_rows,uint8_t shift_type=0);
   void begin(uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS );
   void clear();
   void home();
@@ -125,6 +147,7 @@ private:
   uint8_t _cols;
   uint8_t _rows;
   uint8_t _backlightval;
+  uint8_t _shifttype;
 };
 
 #endif
